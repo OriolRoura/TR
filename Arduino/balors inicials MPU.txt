@@ -1,0 +1,9 @@
+
+
+mpu.setAccelOffsetX(-813);
+  mpu.setAccelOffsetY(-452);
+  mpu.setAccelOffsetZ(889);
+
+mpu.setGyroOffsetX(12);
+  mpu.setGyroOffsetY(172);
+  mpu.setGyroOffsetZ(55);
