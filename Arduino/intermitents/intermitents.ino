@@ -33,6 +33,10 @@
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
 #define DRETA_PIN 5
 #define ESQUERRA_PIN 7
+#define GRAUS 1
+#define GRAUS2 0.3
+int IGUALS;
+int iguals;
 
 bool pass = false;
 
@@ -234,21 +238,31 @@ void loop() {
    Serial.print(gyroX);
    Serial.print("        ");
    Serial.println(gyroXOld);
-  if(gyroX > gyroXOld   ){
+  
+  
+  if(gyroX > (gyroXOld+GRAUS)){
   digitalWrite(DRETA_PIN,HIGH);
+  iguals=0;
+}
+if(gyroX < (gyroXOld+GRAUS2)){
+  IGUALS=IGUALS+1;
+  iguals=iguals+1;
 }
 
-else{
-   digitalWrite(DRETA_PIN, LOW);
-}
-
-  if(gyroX < gyroXOld   ){
+  if(gyroX < (gyroXOld - GRAUS)){
   digitalWrite(ESQUERRA_PIN,HIGH);
+  IGUALS=0;
 }            
 
-else{
-  digitalWrite(ESQUERRA_PIN, LOW);
- 
+if(gyroX > (gyroXOld-GRAUS2)){
+ IGUALS=IGUALS+1;
+ iguals=iguals+1;
+}
+if(IGUALS>= 500 or iguals>=500){
+  digitalWrite(DRETA_PIN,LOW);
+  digitalWrite(ESQUERRA_PIN,LOW);
+  IGUALS=0;
+  iguals=0;
 }
 gyroXOld=gyroX;
 
