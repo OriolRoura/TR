@@ -6,7 +6,8 @@ struct ComsStruct {
   private:
     double id;
     float gyroX, gyroY, gyroZ, accelX, accelY, accelZ;
-    double checksum;
+    bool lightLeft, lightBreak, ligthRight;
+
 
   public:
     ComsStruct() {
@@ -14,10 +15,10 @@ struct ComsStruct {
     }
 
     void clean(){
-      set (0,0,0,0,0,0,0,0);
+      set (0,0,0,0,0,0,0,0,0,0);
     }
     
-    void set (double lId, float lGyroX, float lGyroY, float lGyroZ, float lAccelX, float lAccelY, float lAccelZ, double lChecksum) {
+    void set (double lId, float lGyroX, float lGyroY, float lGyroZ, float lAccelX, float lAccelY, float lAccelZ, bool lLightLeft, bool lLightBreak, bool lLigthRight) {
       id = lId;
       gyroX = lGyroX;
       gyroY = lGyroY;
@@ -25,10 +26,13 @@ struct ComsStruct {
       accelX = lAccelX;
       accelY = lAccelY;
       accelZ = lAccelZ;
-      checksum = lChecksum;    
+      lightLeft = lLightLeft;
+      lightBreak = lLightBreak;
+      ligthRight = lLigthRight;
+   
     }
 
-    void get (double *lId, float *lGyroX, float *lGyroY, float *lGyroZ, float *lAccelX, float *lAccelY, float *lAccelZ, double *lChecksum) {
+    void get (double *lId, float *lGyroX, float *lGyroY, float *lGyroZ, float *lAccelX, float *lAccelY, float *lAccelZ, bool *lLightLeft, bool *lLightBreak, bool *lLigthRight) {
       *lId = id;
       *lGyroX = gyroX;
       *lGyroY = gyroY;
@@ -36,31 +40,12 @@ struct ComsStruct {
       *lAccelX = accelX;
       *lAccelY = accelY;
       *lAccelZ = accelZ;
-      *lChecksum = checksum;
+      *lLightLeft = lightLeft;
+      *lLightBreak = lightBreak;
+      *lLigthRight = ligthRight;
     }
 
-    double calcChecksum () {
-      int i;
-      double lchecksum;
 
-      for (i=0; i<4; i++) {
-        *((byte *) (&checksum)+i)=*((byte *) (&id)+i)^*((byte *) (&gyroX)+i)^*((byte *) (&gyroY)+i)^*((byte *) (&gyroZ)+i)^*((byte *) (&accelX)+i)^*((byte *) (&accelY)+i)^*((byte *) (&accelZ)+i);
-      }
-    
-      return checksum;
-    }
-
-    void setChecksum (double lChecksum) {
-      checksum = lChecksum; 
-    }
-
-    double getChecksum () {
-      return checksum;
-    }
-    
-    bool verifyChecksum () {
-      return checksum == calcChecksum();
-    }
 
 };
 

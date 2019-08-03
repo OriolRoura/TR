@@ -37,7 +37,7 @@ void loop() {
     unsigned long got_time;
     double id;
     float gyroX, gyroY, gyroZ, accelX, accelY, accelZ;
-    double checksum;
+    bool lightLeft, lightBreak, ligthRight;
     String dataString;
 
     
@@ -46,8 +46,8 @@ void loop() {
       while (radio.available()) {                                   // While there is data ready
         radio.read(&cs, sizeof( cs) );             // Get the payload
       }
-      cs.get(&id, &gyroX, &gyroY, &gyroZ, &accelX, &accelY, &accelZ, &checksum);
-      dataString = String(id)+";"+String(gyroX)+";"+String(gyroY)+";"+String(gyroZ)+";"+String(accelX)+";"+String(accelY)+";"+String(accelZ);
+      cs.get(&id, &gyroX, &gyroY, &gyroZ, &accelX, &accelY, &accelZ, &lightLeft, &lightBreak, &ligthRight);
+      dataString = String(id)+";"+String(gyroX)+";"+String(gyroY)+";"+String(gyroZ)+";"+String(accelX)+";"+String(accelY)+";"+String(accelZ)+";"+String(lightLeft)+";"+String(lightBreak)+";"+String(ligthRight);
       Serial.println(dataString);
  }
 
