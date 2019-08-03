@@ -15,6 +15,9 @@ ComsStruct cs;
 #define POLSADOR 9
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
 bool pass = false;
+bool controlDreta = false;
+bool controlEsquerra = false;
+bool controlFre = true;
 
 MPU6050 mpu;
 
@@ -211,9 +214,9 @@ void loop() {
 
  
   dataString = String (millis())+";"+String(gyroX)+";"+String(gyroY)+";"+String(gyroZ)+";";
-  dataString += String(accelX)+";"+String(accelY)+";"+String(accelZ);
+  dataString += String(accelX)+";"+String(accelY)+";"+String(accelZ)+";"+String(controlDreta)+";"+String(controlEsquerra)+";"+String(controlFre);
 
-  cs.set (millis(),gyroX,gyroY,gyroZ,accelX,accelY,accelZ,checksum);      
+  cs.set (millis(),gyroX,gyroY,gyroZ,accelX,accelY,accelZ,controlDreta,controlEsquerra,controlFre);      
 
     Serial.println(dataString);
 
