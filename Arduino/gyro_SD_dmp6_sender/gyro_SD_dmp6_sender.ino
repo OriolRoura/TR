@@ -12,12 +12,16 @@
 
 ComsStruct cs;
 
+#define GRAUS 1
+#define GRAUS2 0.3
 #define POLSADOR 9
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
 bool pass = false;
 bool controlDreta = false;
 bool controlEsquerra = false;
-bool controlFre = true;
+bool controlFre = false;
+int IGUALS;
+float gyroXOld;
 
 MPU6050 mpu;
 
@@ -134,16 +138,17 @@ void setup() {
 }
 
 void loop() {
- if (buttonPressed(POLSADOR)) { 
-    if(pass == true){
-      pass = false; 
-    }
-    else{
-      pass = true;
-    }
- }
+  
+   if (buttonPressed(POLSADOR)) { 
+      if(pass == true){
+        pass = false; 
+      }
+      else{
+        pass = true;
+      }
+   }
 
-     if (!dmpReady) return;
+   if (!dmpReady) return;
 
     // wait for MPU interrupt or extra packet(s) available
     while (!mpuInterrupt && fifoCount < packetSize) {
@@ -190,9 +195,9 @@ void loop() {
         fifoCount -= packetSize;
 
     }
- if(pass == true){
-  // guardem el log en un String
-  String dataString = "";
+    if(pass == true){
+    // guardem el log en un String
+    String dataString = "";
              mpu.dmpGetQuaternion(&q, fifoBuffer);
             mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
@@ -213,19 +218,44 @@ void loop() {
             accelZ=aaWorld.z;
 
  
-  dataString = String (millis())+";"+String(gyroX)+";"+String(gyroY)+";"+String(gyroZ)+";";
-  dataString += String(accelX)+";"+String(accelY)+";"+String(accelZ)+";"+String(controlDreta)+";"+String(controlEsquerra)+";"+String(controlFre);
+    //dataString = String (millis())+";"+String(gyroX)+";"+String(gyroY)+";"+String(gyroZ)+";";
+    //dataString += String(accelX)+";"+String(accelY)+";"+String(accelZ)+";"+String(controlEsquerra)+";"+String(controlFre)+";"+String(controlDreta);
 
-  cs.set (millis(),gyroX,gyroY,gyroZ,accelX,accelY,accelZ,controlDreta,controlEsquerra,controlFre);      
+    cs.set (millis(),gyroX,gyroY,gyroZ,accelX,accelY,accelZ,controlEsquerra,controlFre,controlDreta);      
 
-    Serial.println(dataString);
+    //Serial.println(dataString);
+  
+  
+    if(gyroX > (gyroXOld+GRAUS)){
+      controlDreta = true;
+      controlEsquerra = false;
+      IGUALS=0;
+    }
+    if(gyroX < (gyroXOld+GRAUS2)){
+      IGUALS=IGUALS+1;
+    }
 
-     if (!radio.write( &cs,sizeof(cs))){
-       Serial.println(F("failed"));
-     }  
-  }
+    if(gyroX < (gyroXOld - GRAUS)){
+      controlDreta = false;
+      controlEsquerra = true;;
+      IGUALS=0;
+    }
+
+    if(gyroX > (gyroXOld-GRAUS2)){
+      IGUALS=IGUALS+1;
+    }
+    if(IGUALS>= 500){
+      controlDreta = false;
+      controlEsquerra = false;
+      IGUALS=0;
+    }
+    gyroXOld=gyroX;
+
+    if (!radio.write( &cs,sizeof(cs))){
+      Serial.println(F("failed"));
+    }  
+  }    
 }
-
 
 
 bool buttonPressed(int pin) {
