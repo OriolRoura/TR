@@ -1,5 +1,5 @@
-#include "I2Cdev.h"
-#include "MPU6050_6Axis_MotionApps20.h"
+#include <I2Cdev.h>
+#include <MPU6050_6Axis_MotionApps20.h>
 //#include <Wire.h>
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
 // is used in I2Cdev.h
@@ -66,7 +66,9 @@ const int chipSelect = 4;
 
 
 void setup() {
-   pinMode(INTERRUPT_PIN, INPUT);
+
+  
+  pinMode(INTERRUPT_PIN, INPUT);
   pinMode(POLSADOR,INPUT_PULLUP);
     // join I2C bus (I2Cdev library doesn't do this automatically)
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
@@ -97,13 +99,16 @@ void setup() {
     devStatus = mpu.dmpInitialize();
 
     // supply your own gyro offsets here, scaled for min sensitivity
-    mpu.setXGyroOffset(220);
-    mpu.setYGyroOffset(76);
-    mpu.setZGyroOffset(-85);
-    mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
+    mpu.setXGyroOffset(12);
+    mpu.setYGyroOffset(172);
+    mpu.setZGyroOffset(55);
+    mpu.setZAccelOffset(889); // 889 factory default for my test chip
 
     // make sure it worked (returns 0 if so)
-    if (devStatus == 0) {
+  if (devStatus == 0) {
+        mpu.CalibrateAccel(25);
+        mpu.CalibrateGyro (25);
+        
         // turn on the DMP, now that it's ready
         Serial.println(F("Enabling DMP..."));
         mpu.setDMPEnabled(true);
@@ -198,7 +203,7 @@ void loop() {
     if(pass == true){
     // guardem el log en un String
     String dataString = "";
-             mpu.dmpGetQuaternion(&q, fifoBuffer);
+            mpu.dmpGetQuaternion(&q, fifoBuffer);
             mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
             gyroX=ypr[0] * 180/M_PI;
@@ -208,9 +213,9 @@ void loop() {
 
             // display initial world-frame acceleration, adjusted to remove gravity
             // and rotated based on known orientation from quaternion
-            mpu.dmpGetQuaternion(&q, fifoBuffer);
+  //          mpu.dmpGetQuaternion(&q, fifoBuffer);
             mpu.dmpGetAccel(&aa, fifoBuffer);
-            mpu.dmpGetGravity(&gravity, &q);
+  //          mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
             mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
             accelX=aaWorld.x;
