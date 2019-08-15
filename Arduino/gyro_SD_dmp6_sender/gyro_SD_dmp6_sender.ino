@@ -12,6 +12,7 @@
 
 ComsStruct cs;
 
+#define RL -500
 #define GRAUS 1
 #define GRAUS2 0.3
 #define POLSADOR 9
@@ -22,6 +23,9 @@ bool controlEsquerra = false;
 bool controlFre = false;
 int IGUALS;
 float gyroXOld;
+int DA;
+float accelXOld;
+
 
 MPU6050 mpu;
 
@@ -249,12 +253,25 @@ void loop() {
     if(gyroX > (gyroXOld-GRAUS2)){
       IGUALS=IGUALS+1;
     }
-    if(IGUALS>= 500){
+    if (accelX> (accelXOld+RL)){
+      controlFre = true;
+      DA = 0;
+    }
+    if(accelX < (accelXOld+RL)){
+      DA = DA+1;
+    }
+    if(DA >=   250){
+      controlFre = false;
+      DA = 0;
+    }
+    
+    if(IGUALS>= 250){
       controlDreta = false;
       controlEsquerra = false;
       IGUALS=0;
     }
     gyroXOld=gyroX;
+    accelXOld=accelX;
 
     if (!radio.write( &cs,sizeof(cs))){
       Serial.println(F("failed"));

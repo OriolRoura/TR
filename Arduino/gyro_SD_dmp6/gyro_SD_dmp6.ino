@@ -30,9 +30,19 @@
 #include <SPI.h>
 #include <SD.h>
 
+#define RL -500
+#define GRAUS 1
+#define GRAUS2 0.3
 #define POLSADOR 9
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
 bool pass = false;
+bool controlDreta = false;
+bool controlEsquerra = false;
+bool controlFre = false;
+int IGUALS;
+float gyroXOld;
+int DA;
+float accelXOld;
 
 MPU6050 mpu;
 
@@ -237,9 +247,48 @@ void loop() {
 
 
   dataString = String (millis())+";"+String(gyroX)+";"+String(gyroY)+";"+String(gyroZ)+";";
-  dataString += String(accelX)+";"+String(accelY)+";"+String(accelZ);
+  dataString += String(accelX)+";"+String(accelY)+";"+String(accelZ)+";";
 
-  // obrim el fitxer de daades
+      if(gyroX > (gyroXOld+GRAUS)){
+      controlDreta = true;
+      controlEsquerra = false;
+      IGUALS=0;
+    }
+    if(gyroX < (gyroXOld+GRAUS2)){
+      IGUALS=IGUALS+1;
+    }
+
+    if(gyroX < (gyroXOld - GRAUS)){
+      controlDreta = false;
+      controlEsquerra = true;;
+      IGUALS=0;
+    }
+
+    if(gyroX > (gyroXOld-GRAUS2)){
+      IGUALS=IGUALS+1;
+    }
+    if (accelX> (accelXOld+RL)){
+      controlFre = true;
+      DA = 0;
+    }
+    if(accelX < (accelXOld+RL)){
+      DA = DA+1;
+    }
+    if(DA >=   250){
+      controlFre = false;
+      DA = 0;
+    }
+    
+    if(IGUALS>= 250){
+      controlDreta = false;
+      controlEsquerra = false;
+      IGUALS=0;
+    }
+    gyroXOld=gyroX;
+    accelXOld=accelX;
+
+  dataString += String( controlDreta)+";"+String(controlEsquerra)+";"+String(controlFre);
+  // obrim el fitxer de dades
   File dataFile = SD.open("datalog.csv", FILE_WRITE);
 
   // guardem les dades en el fitxer

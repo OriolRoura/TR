@@ -29,6 +29,8 @@
 #endif
 #include <SPI.h>
 
+#define RL -500
+#define BEL_PIN 3
 #define POLSADOR 9
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
 #define DRETA_PIN 5
@@ -36,7 +38,8 @@
 #define GRAUS 1
 #define GRAUS2 0.3
 int IGUALS;
-int iguals;
+int DA;
+
 
 bool pass = false;
 
@@ -68,6 +71,7 @@ float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gra
 uint8_t teapotPacket[14] = { '$', 0x02, 0,0, 0,0, 0,0, 0,0, 0x00, 0x00, '\r', '\n' };
 
 float gyroXOld;
+float accelXOld;
  
 // ================================================================
 // ===               INTERRUPT DETECTION ROUTINE                ===
@@ -153,7 +157,7 @@ delay(1000);
 }
 
 void loop() {
- if (buttonPressed(POLSADOR)) { 
+ if ( (POLSADOR)) { 
     if(pass == true){
       pass = false; 
     }
@@ -242,30 +246,40 @@ void loop() {
   
   if(gyroX > (gyroXOld+GRAUS)){
   digitalWrite(DRETA_PIN,HIGH);
-  iguals=0;
+  digitalWrite(ESQUERRA_PIN,LOW);
+  IGUALS=0;
 }
 if(gyroX < (gyroXOld+GRAUS2)){
   IGUALS=IGUALS+1;
-  iguals=iguals+1;
 }
 
   if(gyroX < (gyroXOld - GRAUS)){
   digitalWrite(ESQUERRA_PIN,HIGH);
+  digitalWrite(DRETA_PIN,LOW);
   IGUALS=0;
-}            
+}
+    if (accelX > (accelXOld+RL)){
+      digitalWrite(BEL_PIN,HIGH);
+      DA = 0;
+    }
+    if(accelX < (accelXOld+RL)){
+      DA = DA+1;
+    }
+    if(DA >= 250){
+      digitalWrite(BEL_PIN,LOW);
+      DA = 0;
+    }
 
 if(gyroX > (gyroXOld-GRAUS2)){
  IGUALS=IGUALS+1;
- iguals=iguals+1;
 }
-if(IGUALS>= 500 or iguals>=500){
+if(IGUALS>= 250){
   digitalWrite(DRETA_PIN,LOW);
   digitalWrite(ESQUERRA_PIN,LOW);
   IGUALS=0;
-  iguals=0;
 }
 gyroXOld=gyroX;
-
+accelXOld=accelX;
  }
 // delay(100);
 }
