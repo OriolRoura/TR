@@ -233,8 +233,7 @@ void loop() {
     cs.set (millis(),gyroX,gyroY,gyroZ,accelX,accelY,accelZ,controlEsquerra,controlFre,controlDreta);      
 
     //Serial.println(dataString);
-  
-  
+// ---------------------------------------------------------------  
     if(gyroX > (gyroXOld+GRAUS)){
       controlDreta = true;
       controlEsquerra = false;
@@ -272,7 +271,7 @@ void loop() {
     }
     gyroXOld=gyroX;
     accelXOld=accelX;
-
+// --------------------------------------------------------------------------  
     if (!radio.write( &cs,sizeof(cs))){
       Serial.println(F("failed"));
     }  
