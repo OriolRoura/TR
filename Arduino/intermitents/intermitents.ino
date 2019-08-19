@@ -37,11 +37,16 @@
 #define ESQUERRA_PIN 7
 #define GRAUS 1
 #define GRAUS2 0.3
+#define INTER 500
 int IGUALS;
 int DA;
-
-
+long esquerraMillis, dretaMillis=0;
+bool primeraDreta, primeraEsquerra;
 bool pass = false;
+bool controlDreta = false;
+bool controlEsquerra = false;
+bool controlFre = false;
+bool dretaEnces, esquerraEnces;
 
 MPU6050 mpu;
 
@@ -243,43 +248,101 @@ void loop() {
    Serial.print("        ");
    Serial.println(gyroXOld);
   
-  
-  if(gyroX > (gyroXOld+GRAUS)){
-  digitalWrite(DRETA_PIN,HIGH);
-  digitalWrite(ESQUERRA_PIN,LOW);
-  IGUALS=0;
-}
-if(gyroX < (gyroXOld+GRAUS2)){
-  IGUALS=IGUALS+1;
-}
+// ---------------------------------------------------------------  
+    if(gyroX > (gyroXOld+GRAUS)){
+      controlDreta = true;
+      controlEsquerra = false;
+      IGUALS=0;
+    }
+    if(gyroX < (gyroXOld+GRAUS2)){
+      IGUALS=IGUALS+1;
+    }
 
-  if(gyroX < (gyroXOld - GRAUS)){
-  digitalWrite(ESQUERRA_PIN,HIGH);
-  digitalWrite(DRETA_PIN,LOW);
-  IGUALS=0;
-}
-    if (accelX > (accelXOld+RL)){
-      digitalWrite(BEL_PIN,HIGH);
+    if(gyroX < (gyroXOld - GRAUS)){
+      controlDreta = false;
+      controlEsquerra = true;;
+      IGUALS=0;
+    }
+
+    if(gyroX > (gyroXOld-GRAUS2)){
+      IGUALS=IGUALS+1;
+    }
+    if (accelX> (accelXOld+RL)){
+      controlFre = true;
       DA = 0;
     }
     if(accelX < (accelXOld+RL)){
       DA = DA+1;
     }
-    if(DA >= 250){
-      digitalWrite(BEL_PIN,LOW);
+    if(DA >=   250){
+      controlFre = false;
       DA = 0;
     }
+    
+    if(IGUALS>= 250){
+      controlDreta = false;
+      controlEsquerra = false;
+      IGUALS=0;
+    }
+    gyroXOld=gyroX;
+    accelXOld=accelX;
+// --------------------------------------------------------------------------  
 
-if(gyroX > (gyroXOld-GRAUS2)){
- IGUALS=IGUALS+1;
-}
-if(IGUALS>= 250){
-  digitalWrite(DRETA_PIN,LOW);
-  digitalWrite(ESQUERRA_PIN,LOW);
-  IGUALS=0;
-}
-gyroXOld=gyroX;
-accelXOld=accelX;
+//control dret intermitent
+
+    if (controlDreta==true){
+      if (primeraDreta==true){    
+        primeraDreta = false;
+        dretaMillis=millis();     
+        digitalWrite(DRETA_PIN,HIGH);
+        dretaEnces=true; 
+      } else {
+        if (millis() >= dretaMillis + INTER){   
+          if (dretaEnces==true){
+            digitalWrite(DRETA_PIN,LOW);
+            dretaEnces=false; 
+          } else {
+            digitalWrite(DRETA_PIN,HIGH);
+            dretaEnces=true; 
+          }
+          dretaMillis=millis();  
+        }
+      }
+      
+    } else {
+      primeraDreta = true;
+      digitalWrite(DRETA_PIN,LOW);
+    }
+    
+//control intermitent esquerra    
+    
+    if (controlEsquerra==true){
+      if (primeraEsquerra==true){    
+        primeraEsquerra = false;
+        esquerraMillis=millis();     
+        digitalWrite(ESQUERRA_PIN,HIGH);
+        esquerraEnces=true; 
+      } else {
+        if (millis() >= esquerraMillis + INTER){   
+          if (esquerraEnces==true){
+            digitalWrite(ESQUERRA_PIN,LOW);
+            esquerraEnces=false; 
+          } else {
+            digitalWrite(ESQUERRA_PIN,HIGH);
+            esquerraEnces=true; 
+          }
+          esquerraMillis=millis();  
+        }
+      }
+    }
+
+//control llum fre
+    
+    if (controlFre==true){
+      digitalWrite(BEL_PIN,HIGH); 
+    } else {
+      digitalWrite(BEL_PIN,LOW); 
+    }
  }
 // delay(100);
 }
