@@ -39,9 +39,11 @@
 #define GRAUS2 0.3
 #define INTER 500
 #define COINCIDENCIES 250
+#define INTERVAL 50
 int Iguals;
 int da;
 long esquerraMillis, dretaMillis=0;
+long millisOld;
 bool primeraDreta, primeraEsquerra;
 bool pass = false;
 bool controlDreta = false;
@@ -254,25 +256,29 @@ void loop() {
    Serial.println(gyroXOld);
   
 // ---------------------------------------------------------------  
-    if ( abs (gyroXOld-gyroX) >= 300 ){     //arreglar el salt als 180º #3
-      gyroXOld = gyroX;
+    if(millis()>=millisOld+INTERVAL){
+      millisOld=millis();
+      if ( abs (gyroXOld-gyroX) >= 300 ){     //arreglar el salt als 180º #3
+        gyroXOld = gyroX;
+      }
+      
+      if(gyroX > (gyroXOld+GRAUS)){
+        controlDreta = true;
+        controlEsquerra = false;
+        Iguals=0;
+      }
+      if(gyroX < (gyroXOld+GRAUS2)){
+        Iguals++;
+      }
+  
+      if(gyroX < (gyroXOld - GRAUS)){
+        controlDreta = false;
+        controlEsquerra = true;;
+        Iguals=0;
+      }
+      gyroXOld=gyroX;
     }
-    
-    if(gyroX > (gyroXOld+GRAUS)){
-      controlDreta = true;
-      controlEsquerra = false;
-      Iguals=0;
-    }
-    if(gyroX < (gyroXOld+GRAUS2)){
-      Iguals++;
-    }
-
-    if(gyroX < (gyroXOld - GRAUS)){
-      controlDreta = false;
-      controlEsquerra = true;;
-      Iguals=0;
-    }
-
+      
     if(gyroX > (gyroXOld-GRAUS2)){
       Iguals++;
     }
@@ -293,7 +299,7 @@ void loop() {
       controlEsquerra = false;
       Iguals=0;
     }
-    gyroXOld=gyroX;
+    
     accelXOld=accelX;
 // --------------------------------------------------------------------------  
 

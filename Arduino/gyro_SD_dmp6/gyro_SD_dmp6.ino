@@ -37,6 +37,8 @@
 #define POLSADOR 9
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
 #define COINCIDENCIES 250
+#define INTERVAL 50
+long millisOld;
 bool pass = false;
 bool controlDreta = false;
 bool controlEsquerra = false;
@@ -256,25 +258,29 @@ void loop() {
   dataString = String (millis())+";"+String(gyroX)+";"+String(gyroY)+";"+String(gyroZ)+";";
   dataString += String(accelX)+";"+String(accelY)+";"+String(accelZ)+";";
 // ---------------------------------------------------------------  
-    if ( abs (gyroXOld-gyroX) >= 300 ){     //arreglar el salt als 180º #3
-      gyroXOld = gyroX;
+    if(millis()>=millisOld+INTERVAL){
+      millisOld=millis();
+      if ( abs (gyroXOld-gyroX) >= 300 ){     //arreglar el salt als 180º #3
+        gyroXOld = gyroX;
+      }
+      
+      if(gyroX > (gyroXOld+GRAUS)){
+        controlDreta = true;
+        controlEsquerra = false;
+        Iguals=0;
+      }
+      if(gyroX < (gyroXOld+GRAUS2)){
+        Iguals++;
+      }
+  
+      if(gyroX < (gyroXOld - GRAUS)){
+        controlDreta = false;
+        controlEsquerra = true;;
+        Iguals=0;
+      }
+      gyroXOld=gyroX;
     }
-    
-    if(gyroX > (gyroXOld+GRAUS)){
-      controlDreta = true;
-      controlEsquerra = false;
-      Iguals=0;
-    }
-    if(gyroX < (gyroXOld+GRAUS2)){
-      Iguals++;
-    }
-
-    if(gyroX < (gyroXOld - GRAUS)){
-      controlDreta = false;
-      controlEsquerra = true;;
-      Iguals=0;
-    }
-
+      
     if(gyroX > (gyroXOld-GRAUS2)){
       Iguals++;
     }
@@ -295,7 +301,7 @@ void loop() {
       controlEsquerra = false;
       Iguals=0;
     }
-    gyroXOld=gyroX;
+    
     accelXOld=accelX;
 // --------------------------------------------------------------------------  
 
