@@ -1,3 +1,5 @@
+
+
 #include <I2Cdev.h>
 #include <MPU6050_6Axis_MotionApps20.h>
 //#include <Wire.h>
@@ -12,18 +14,19 @@
 
 ComsStruct cs;
 
-#define RL -500
+#define RL +500
 #define GRAUS 1
 #define GRAUS2 0.3
 #define POLSADOR 9
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
+#define COINCIDENCIES 250
 bool pass = false;
 bool controlDreta = false;
 bool controlEsquerra = false;
 bool controlFre = false;
-int IGUALS;
+int Iguals;
 float gyroXOld;
-int DA;
+int da;
 float accelXOld;
 
 
@@ -110,8 +113,8 @@ void setup() {
 
     // make sure it worked (returns 0 if so)
   if (devStatus == 0) {
-        mpu.CalibrateAccel(25);
-        mpu.CalibrateGyro (25);
+        mpu.CalibrateAccel(15);
+        mpu.CalibrateGyro (15);
         
         // turn on the DMP, now that it's ready
         Serial.println(F("Enabling DMP..."));
@@ -234,40 +237,44 @@ void loop() {
 
     //Serial.println(dataString);
 // ---------------------------------------------------------------  
+    if ( abs (gyroXOld-gyroX) >= 300 ){     //arreglar el salt als 180º #3
+      gyroXOld = gyroX;
+    }
+    
     if(gyroX > (gyroXOld+GRAUS)){
       controlDreta = true;
       controlEsquerra = false;
-      IGUALS=0;
+      Iguals=0;
     }
     if(gyroX < (gyroXOld+GRAUS2)){
-      IGUALS=IGUALS+1;
+      Iguals++;
     }
 
     if(gyroX < (gyroXOld - GRAUS)){
       controlDreta = false;
       controlEsquerra = true;;
-      IGUALS=0;
+      Iguals=0;
     }
 
     if(gyroX > (gyroXOld-GRAUS2)){
-      IGUALS=IGUALS+1;
+      Iguals++;
     }
-    if (accelX> (accelXOld+RL)){
+    if (accelX<= (accelXOld-RL)){
       controlFre = true;
-      DA = 0;
+      da = 0;
     }
-    if(accelX < (accelXOld+RL)){
-      DA = DA+1;
+    if(accelX >= (accelXOld-RL)){
+      da++;
     }
-    if(DA >=   250){
+    if(da >=   COINCIDENCIES){
       controlFre = false;
-      DA = 0;
+      da = 0;
     }
     
-    if(IGUALS>= 250){
+    if(Iguals>= COINCIDENCIES){
       controlDreta = false;
       controlEsquerra = false;
-      IGUALS=0;
+      Iguals=0;
     }
     gyroXOld=gyroX;
     accelXOld=accelX;

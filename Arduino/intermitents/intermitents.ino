@@ -38,8 +38,9 @@
 #define GRAUS 1
 #define GRAUS2 0.3
 #define INTER 500
-int IGUALS;
-int DA;
+#define COINCIDENCIES 250
+int Iguals;
+int da;
 long esquerraMillis, dretaMillis=0;
 bool primeraDreta, primeraEsquerra;
 bool pass = false;
@@ -130,6 +131,10 @@ void setup() {
 
     // make sure it worked (returns 0 if so)
     if (devStatus == 0) {
+        
+        mpu.CalibrateAccel(15);
+        mpu.CalibrateGyro (15);
+        
         // turn on the DMP, now that it's ready
         Serial.println(F("Enabling DMP..."));
         mpu.setDMPEnabled(true);
@@ -249,40 +254,44 @@ void loop() {
    Serial.println(gyroXOld);
   
 // ---------------------------------------------------------------  
+    if ( abs (gyroXOld-gyroX) >= 300 ){     //arreglar el salt als 180º #3
+      gyroXOld = gyroX;
+    }
+    
     if(gyroX > (gyroXOld+GRAUS)){
       controlDreta = true;
       controlEsquerra = false;
-      IGUALS=0;
+      Iguals=0;
     }
     if(gyroX < (gyroXOld+GRAUS2)){
-      IGUALS=IGUALS+1;
+      Iguals++;
     }
 
     if(gyroX < (gyroXOld - GRAUS)){
       controlDreta = false;
       controlEsquerra = true;;
-      IGUALS=0;
+      Iguals=0;
     }
 
     if(gyroX > (gyroXOld-GRAUS2)){
-      IGUALS=IGUALS+1;
+      Iguals++;
     }
-    if (accelX> (accelXOld+RL)){
+    if (accelX<= (accelXOld-RL)){
       controlFre = true;
-      DA = 0;
+      da = 0;
     }
-    if(accelX < (accelXOld+RL)){
-      DA = DA+1;
+    if(accelX >= (accelXOld-RL)){
+      da++;
     }
-    if(DA >=   250){
+    if(da >=   COINCIDENCIES){
       controlFre = false;
-      DA = 0;
+      da = 0;
     }
     
-    if(IGUALS>= 250){
+    if(Iguals>= COINCIDENCIES){
       controlDreta = false;
       controlEsquerra = false;
-      IGUALS=0;
+      Iguals=0;
     }
     gyroXOld=gyroX;
     accelXOld=accelX;
