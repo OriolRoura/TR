@@ -29,13 +29,14 @@
 #endif
 #include <SPI.h>
 
+#define FALLO 1000
 #define RL -500
 #define BEL_PIN 3
 #define POLSADOR 9
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
 #define DRETA_PIN 5
 #define ESQUERRA_PIN 7
-#define GRAUS 1
+#define GRAUS 5
 #define GRAUS2 0.3
 #define INTER 500
 #define COINCIDENCIES 250
@@ -80,7 +81,8 @@ uint8_t teapotPacket[14] = { '$', 0x02, 0,0, 0,0, 0,0, 0,0, 0x00, 0x00, '\r', '\
 
 float gyroXOld;
 float accelXOld;
- 
+float accelYOld;
+float accelZOld;
 // ================================================================
 // ===               INTERRUPT DETECTION ROUTINE                ===
 // ================================================================
@@ -115,6 +117,7 @@ void setup() {
 
     Serial.println(F("Initializing I2C devices..."));
     mpu.initialize();
+    mpu.setRate (5);
     pinMode(INTERRUPT_PIN, INPUT);
 
     // verify connection
@@ -248,14 +251,14 @@ void loop() {
             accelZ=aaWorld.z;
 
 
-  dataString = String (millis())+";"+String(gyroX)+";"+String(gyroY)+";"+String(gyroZ)+";";
-  dataString += String(accelX)+";"+String(accelY)+";"+String(accelZ);
 
-   Serial.print(gyroX);
-   Serial.print("        ");
-   Serial.println(gyroXOld);
-  
 // ---------------------------------------------------------------  
+    if( abs(accelX + accelXOld)>=FALLO and abs(accelY + accelYOld)>=FALLO and abs(accelZ + accelZOld)>=FALLO){
+      accelX=accelXOld;
+      accelY=accelYOld;
+      accelZ=accelZOld;      
+    }
+    
     if(millis()>=millisOld+INTERVAL){
       millisOld=millis();
       if ( abs (gyroXOld-gyroX) >= 300 ){     //arreglar el salt als 180º #3
@@ -301,7 +304,16 @@ void loop() {
     }
     
     accelXOld=accelX;
+    accelYOld=accelY;
+    accelZOld=accelZ;
 // --------------------------------------------------------------------------  
+  dataString = String (millis())+";"+String(gyroX)+";"+String(gyroY)+";"+String(gyroZ)+";";
+  dataString += String(accelX)+";"+String(accelY)+";"+String(accelZ);
+
+   Serial.print(gyroX);
+   Serial.print("        ");
+   Serial.println(gyroXOld);
+  
 
 //control dret intermitent
 

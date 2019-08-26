@@ -14,8 +14,9 @@
 
 ComsStruct cs;
 
+#define FALLO 1000
 #define RL +500
-#define GRAUS 1
+#define GRAUS 5
 #define GRAUS2 0.3
 #define POLSADOR 9
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
@@ -30,7 +31,8 @@ int Iguals;
 float gyroXOld;
 int da;
 float accelXOld;
-
+float accelYOld;
+float accelZOld;
 
 MPU6050 mpu;
 
@@ -77,6 +79,7 @@ const int chipSelect = 4;
 void setup() {
 
   
+  
   pinMode(INTERRUPT_PIN, INPUT);
   pinMode(POLSADOR,INPUT_PULLUP);
     // join I2C bus (I2Cdev library doesn't do this automatically)
@@ -97,6 +100,7 @@ void setup() {
 
     Serial.println(F("Initializing I2C devices..."));
     mpu.initialize();
+    mpu.setRate (5);
     pinMode(INTERRUPT_PIN, INPUT);
 
     // verify connection
@@ -235,10 +239,16 @@ void loop() {
     //dataString = String (millis())+";"+String(gyroX)+";"+String(gyroY)+";"+String(gyroZ)+";";
     //dataString += String(accelX)+";"+String(accelY)+";"+String(accelZ)+";"+String(controlEsquerra)+";"+String(controlFre)+";"+String(controlDreta);
 
-    cs.set (millis(),gyroX,gyroY,gyroZ,accelX,accelY,accelZ,controlEsquerra,controlFre,controlDreta);      
+        
 
     //Serial.println(dataString);
 // ---------------------------------------------------------------  
+    if( abs(accelX + accelXOld)>=FALLO and abs(accelY + accelYOld)>=FALLO and abs(accelZ + accelZOld)>=FALLO){
+      accelX=accelXOld;
+      accelY=accelYOld;
+      accelZ=accelZOld;      
+    }
+    
     if(millis()>=millisOld+INTERVAL){
       millisOld=millis();
       if ( abs (gyroXOld-gyroX) >= 300 ){     //arreglar el salt als 180º #3
@@ -284,7 +294,11 @@ void loop() {
     }
     
     accelXOld=accelX;
+    accelYOld=accelY;
+    accelZOld=accelZ;
 // --------------------------------------------------------------------------  
+    cs.set (millis(),gyroX,gyroY,gyroZ,accelX,accelY,accelZ,controlEsquerra,controlFre,controlDreta); 
+
     if (!radio.write( &cs,sizeof(cs))){
       Serial.println(F("failed"));
     }  

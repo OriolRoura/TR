@@ -31,8 +31,9 @@
 #include <SPI.h>
 #include <SD.h>
 
+#define FALLO 1000
 #define RL +500
-#define GRAUS 1
+#define GRAUS 5 
 #define GRAUS2 0.3
 #define POLSADOR 9
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
@@ -44,9 +45,11 @@ bool controlDreta = false;
 bool controlEsquerra = false;
 bool controlFre = false;
 int Iguals;
-float gyroXOld;
 int da;
+float gyroXOld;
 float accelXOld;
+float accelYOld;
+float accelZOld;
 
 MPU6050 mpu;
 
@@ -111,6 +114,7 @@ void setup() {
 
     Serial.println(F("Initializing I2C devices..."));
     mpu.initialize();
+    mpu.setRate (5);
     pinMode(INTERRUPT_PIN, INPUT);
 
     // verify connection
@@ -255,9 +259,14 @@ void loop() {
             accelZ=aaWorld.z;
 
 
-  dataString = String (millis())+";"+String(gyroX)+";"+String(gyroY)+";"+String(gyroZ)+";";
-  dataString += String(accelX)+";"+String(accelY)+";"+String(accelZ)+";";
+ 
 // ---------------------------------------------------------------  
+    if( abs(accelX + accelXOld)>=FALLO and abs(accelY + accelYOld)>=FALLO and abs(accelZ + accelZOld)>=FALLO){
+      accelX=accelXOld;
+      accelY=accelYOld;
+      accelZ=accelZOld;      
+    }
+    
     if(millis()>=millisOld+INTERVAL){
       millisOld=millis();
       if ( abs (gyroXOld-gyroX) >= 300 ){     //arreglar el salt als 180º #3
@@ -303,8 +312,12 @@ void loop() {
     }
     
     accelXOld=accelX;
+    accelYOld=accelY;
+    accelZOld=accelZ;
 // --------------------------------------------------------------------------  
 
+  dataString = String (millis())+";"+String(gyroX)+";"+String(gyroY)+";"+String(gyroZ)+";";
+  dataString += String(accelX)+";"+String(accelY)+";"+String(accelZ)+";";
   dataString += String( controlDreta)+";"+String(controlEsquerra)+";"+String(controlFre);
   // obrim el fitxer de dades
   File dataFile = SD.open("datalog.csv", FILE_WRITE);
