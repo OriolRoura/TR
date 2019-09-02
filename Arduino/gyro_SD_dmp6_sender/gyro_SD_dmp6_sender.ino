@@ -15,13 +15,13 @@
 ComsStruct cs;
 
 #define FALLO 1000
-#define RL +500
+#define RL 2000
 #define GRAUS 5
 #define GRAUS2 0.3
 #define POLSADOR 9
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
 #define COINCIDENCIES 250
-#define INTERVAL 50
+#define INTERVAL 300
 long millisOld;
 bool pass = false;
 bool controlDreta = false;
@@ -279,7 +279,7 @@ void loop() {
       controlFre = true;
       da = 0;
     }
-    if(accelX >= (accelXOld-RL)){
+    if(accelY >= (accelYOld-RL)){
       da++;
     }
     if(da >=   COINCIDENCIES){
