@@ -18,6 +18,7 @@ ComsStruct cs;
 #define RL 2000
 #define GRAUS 5
 #define GRAUS2 0.3
+#define GRAUS3 0.1
 #define POLSADOR 9
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
 #define COINCIDENCIES 250
@@ -27,12 +28,14 @@ bool pass = false;
 bool controlDreta = false;
 bool controlEsquerra = false;
 bool controlFre = false;
+bool fre = false
 int Iguals;
 float gyroXOld;
 int da;
 float accelXOld;
 float accelYOld;
 float accelZOld;
+float gyroYOld;
 
 MPU6050 mpu;
 
@@ -275,17 +278,25 @@ void loop() {
     if(gyroX > (gyroXOld-GRAUS2)){
       Iguals++;
     }
-    if (accelX<= (accelXOld-RL)){
+    if((gyroY < gyroOld-GRAUS3) && (fre==true)){
       controlFre = true;
       da = 0;
     }
-    if(accelY >= (accelYOld-RL)){
+    if ((accelX>1000 ) && (accelY<-1000 )){
+      fre=true;
+      gyroYOld=gyroY;
+    }
+    else{
+      fre=false;
+    }
+    
+    /*if(accelY >= (accelYOld-RL)){
       da++;
     }
     if(da >=   COINCIDENCIES){
       controlFre = false;
       da = 0;
-    }
+    }*/
     
     if(Iguals>= COINCIDENCIES){
       controlDreta = false;

@@ -43,6 +43,7 @@
 #define INTERVAL 50
 int Iguals;
 int da;
+unsigned int ctlButton = 0;
 long esquerraMillis, dretaMillis=0;
 long millisOld;
 bool primeraDreta, primeraEsquerra;
@@ -172,7 +173,7 @@ delay(1000);
 }
 
 void loop() {
- if ( (POLSADOR)) { 
+ if ( buttonPressed(POLSADOR)) { 
     if(pass == true){
       pass = false; 
     }
@@ -376,13 +377,23 @@ void loop() {
 
 
 
-bool buttonPressed(int pin) {
-   if(digitalRead(pin) == LOW){
-    while(digitalRead(pin) == LOW){
-      delay(100);
-    }
-    return true;
-   } else {
-    return false;
-   }
-}
+bool buttonPressed(unsigned short pin) {
+  int btnStatus;
+  if (pin > 31) {
+     return false;
+  };
+  btnStatus = ctlButton & 1 << pin;
+  if (btnStatus == 0) {
+     if (digitalRead(pin) == LOW) {
+       ctlButton = ctlButton | 1 << pin;
+       delay(100);
+       return true;
+     }
+  }
+  else {
+     if (digitalRead(pin) == HIGH) {
+       ctlButton = ctlButton & (1 << pin ^ 0xFFFF);
+     };
+  };
+  return false;
+};

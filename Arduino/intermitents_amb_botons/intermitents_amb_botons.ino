@@ -45,6 +45,7 @@
 #define INTERVAL 300  
 int Iguals;
 int da;
+unsigned int ctlButton = 0;
 long esquerraMillis, dretaMillis=0;
 long millisOld;
 bool primeraDreta, primeraEsquerra;
@@ -354,8 +355,6 @@ void loop() {
       
         if (millis() >= dretaMillis + INTER ){
           if (dretaEnces == true){
-            
-
             digitalWrite(DRETA_PIN,LOW);
             dretaEnces=false;
           } else { 
@@ -370,22 +369,15 @@ void loop() {
 //control intermitent esquerra    
     
     if (controlEsquerra==true || esquerraEnces == true){
-      if (primeraEsquerra==true){    
-        primeraEsquerra = false;
-        esquerraMillis=millis();     
-        digitalWrite(ESQUERRA_PIN,HIGH);
-        esquerraEnces=true; 
-      } else {
-        if (millis() >= esquerraMillis + INTER){   
-          if (esquerraEnces==true){
-            digitalWrite(ESQUERRA_PIN,LOW);
-            esquerraEnces=false; 
-          } else {
-            digitalWrite(ESQUERRA_PIN,HIGH);
-            esquerraEnces=true; 
-          }
-          esquerraMillis=millis();  
+      if (millis() >= esquerraMillis + INTER){   
+        if (esquerraEnces==true){
+          digitalWrite(ESQUERRA_PIN,LOW);
+          esquerraEnces=false; 
+        } else {
+          digitalWrite(ESQUERRA_PIN,HIGH);
+          esquerraEnces=true; 
         }
+        esquerraMillis=millis();  
       }
     }
 
@@ -403,13 +395,23 @@ void loop() {
 
 
 
-bool buttonPressed(int pin) {
-   if(digitalRead(pin) == LOW){
-    while(digitalRead(pin) == LOW){
-      delay(100);
-    }
-    return true;
-   } else {
-    return false;
-   }
-}
+bool buttonPressed(unsigned short pin) {
+  int btnStatus;
+  if (pin > 31) {
+     return false;
+  };
+  btnStatus = ctlButton & 1 << pin;
+  if (btnStatus == 0) {
+     if (digitalRead(pin) == LOW) {
+       ctlButton = ctlButton | 1 << pin;
+       delay(100);
+       return true;
+     }
+  }
+  else {
+     if (digitalRead(pin) == HIGH) {
+       ctlButton = ctlButton & (1 << pin ^ 0xFFFF);
+     };
+  };
+  return false;
+};
