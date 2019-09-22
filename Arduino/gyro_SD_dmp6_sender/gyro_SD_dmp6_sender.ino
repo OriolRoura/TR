@@ -11,6 +11,7 @@
 #include <SPI.h>
 #include "RF24.h"
 #include "comsStruct.h"
+#include "PasBaix.h"
 
 ComsStruct cs;
 
@@ -23,19 +24,27 @@ ComsStruct cs;
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
 #define COINCIDENCIES 250
 #define INTERVAL 300
+#define ALFA 0.05 
 long millisOld;
+
 bool pass = false;
 bool controlDreta = false;
 bool controlEsquerra = false;
 bool controlFre = false;
-bool fre = false
+bool fre = false;
+
 int Iguals;
-float gyroXOld;
 int da;
+
+float gyroXOld;
+float gyroYOld;
 float accelXOld;
 float accelYOld;
 float accelZOld;
-float gyroYOld;
+float gyroOld;
+
+PasBaix pbX(ALFA);
+PasBaix pbY(ALFA);
 
 MPU6050 mpu;
 
@@ -234,8 +243,8 @@ void loop() {
   //          mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
             mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
-            accelX=aaWorld.x;
-            accelY=aaWorld.y;
+            accelX=pbX.calc(aaWorld.x);
+            accelY=pbY.calc(aaWorld.y);
             accelZ=aaWorld.z;
 
  
@@ -290,13 +299,13 @@ void loop() {
       fre=false;
     }
     
-    /*if(accelY >= (accelYOld-RL)){
+    if(accelY >= (accelYOld-RL)){
       da++;
     }
     if(da >=   COINCIDENCIES){
       controlFre = false;
       da = 0;
-    }*/
+    }
     
     if(Iguals>= COINCIDENCIES){
       controlDreta = false;
